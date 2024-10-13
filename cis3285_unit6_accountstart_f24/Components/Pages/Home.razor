@@ -41,15 +41,16 @@
 <input type="text" id="withdrawAmount" name="withdrawAmount" @bind="strWithdrawAmount">
 <button class="btn btn-primary" @onclick="btnWithdraw_Click">Withdraw</button>
 <br>
-
+<span style="color:red;">@withdrawError</span> <!-- Change here: Display error message for withdrawal -->
 @code {
 
     private string newAccountName;              // name in the new account textbox
-    private string selectedAccountName;         // account name selected from Acccout dropdown
+    private string selectedAccountName;         // account name selected from Account dropdown
     private string strAccountBalance;           // display for the account balance
     private decimal accountBalance = 0.00m;     // numeric value of account balance
     private string strDepositAmount;            // amount to deposit as a string
     private string strWithdrawAmount;           // amount to withdraw as a string
+    private string withdrawError;                // Change here: Declare withdraw error message
 
     private List<string> accountList = new List<string>();
     AccountService acctService = new AccountService();
@@ -84,10 +85,25 @@
 
     private void btnWithdraw_Click()
     {
-        decimal amount = decimal.Parse(strWithdrawAmount);
-        acctService.Withdrawal(selectedAccountName, amount);
-        accountBalance = acctService.GetAccountBalance(selectedAccountName);
-        strAccountBalance = accountBalance.ToString();
+        withdrawError = ""; // Clear previous error message
+        if (decimal.TryParse(strWithdrawAmount, out decimal amount) && amount > 0) // Validate withdrawal amount
+        {
+            // Check if there are sufficient funds
+            if (accountBalance >= amount)
+            {
+                acctService.Withdrawal(selectedAccountName, amount);
+                accountBalance = acctService.GetAccountBalance(selectedAccountName);
+                strAccountBalance = accountBalance.ToString();
+            }
+            else
+            {
+                withdrawError = "Insufficient funds for this withdrawal."; // Error for insufficient funds
+            }
+        }
+        else
+        {
+            withdrawError = "Please enter a valid positive withdrawal amount."; // Set error message for invalid withdrawal
+        }
         StateHasChanged();
     }
 
@@ -102,6 +118,5 @@
 
         newAccountName = string.Empty; // Clear the input field
         StateHasChanged();
-
     }
 }

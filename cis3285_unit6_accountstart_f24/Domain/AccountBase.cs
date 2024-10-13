@@ -40,7 +40,13 @@ namespace Domain
 
         public void AddTransaction(decimal amount)
         {
-            RewardPoints += CalculateRewardPoints(amount);
+            if (amount > 0)
+            {
+                // Only add reward points for deposits (positive amounts)
+                RewardPoints += CalculateRewardPoints(amount);
+            }
+
+            // Adjust the balance regardless of the sign of the amount
             Balance += amount;
         }
 
